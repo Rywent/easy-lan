@@ -143,6 +143,91 @@ ip dhcp excluded-address 192.168.10.1 192.168.10.20
 ---
 
 
-## Практическая часть
+## 🛠 Практическая часть
 
+### 1. Изоляция VLAN
 
+Перед началом настройки убедитесь, что все Trunk магистрали от коммутаторов отделов сходят в коммутатор `Core 3560`, а так же создайте сервеную команту во VLAN 199:
+
+<p align="center">
+  <img src="../assets/tutorialImgs/lesson2Imgs/server-room.png" alt="server-room.png" />
+</p>
+
+(Port-security настроим в другом уроке)
+
+---
+
+### 2. Настройка изоляции на Core
+
+Так как Core сейчас содержит в себе все VLAN, то движение трафика проходит через него, значит на нем и будем изолировать VLAN. Изоляция происходит с помощью ACL, и выглядит следующим образом:
+
+```cisco
+! 1. Создаем расширенный именованный список доступа (Extended ACL)
+Core(config)# ip access-list extended <ACL_NAME>
+
+! 2. Разрешаем транзит системных DHCP-запросов и ответов
+Core(config-ext-nacl)# permit udp any any eq bootpc
+Core(config-ext-nacl)# permit udp any any eq bootps
+
+! 3. Разрешаем доступ со всех VLAN к общедоступным корпоративным сервисам
+Core(config-ext-nacl)# permit ip any host <DNS_SERVER_IP>
+Core(config-ext-nacl)# permit ip any host <MAIL_SERVER_IP>
+
+! 4. Запрещаем любой перекрестный трафик между локальными подсетями (изоляция VLAN)
+Core(config-ext-nacl)# deny ip <SUMMARY_NETWORK> <WILDCARD_MASK> <SUMMARY_NETWORK> <WILDCARD_MASK>
+
+! 5. Разрешаем весь остальной исходящий трафик (выход в Интернет)
+Core(config-ext-nacl)# permit ip any any
+Core(config-ext-nacl)# exit
+
+! 6. Применяем ACL на входящий трафик нужного SVI-интерфейса
+Core(config)# interface vlan <VLAN_ID>
+Core(config-if)# ip access-group <ACL_NAME> in
+Core(config-if)# exit
+```
+
+### Разбор параметров шаблона:
+
+* `<ACL_NAME>` — Понятное имя списка доступа (например, `VLAN_ISOLATION_ACL`).
+* `<DNS_SERVER_IP>` — IP-адрес DNS-сервера в VLAN 199 (например, `192.168.199.10`).
+* `<MAIL_SERVER_IP>` — IP-адрес Почтового сервера в VLAN 199 (например, `192.168.199.11`).
+* `<SUMMARY_NETWORK>` — Агрегированная сеть или базовая подсеть компании (например, `192.168.0.0`).
+* `<WILDCARD_MASK>` — Обратная маска (Wildcard) для блокировки диапазона всех VLAN (например, `0.0.255.255` для охвата всех подсетей `192.168.x.x`).
+* `<VLAN_ID>` — Номер VLAN, к которому применяется фильтр (например, `10`, `20`, `30`).
+
+В этом проекте VLAN изоляция выглядит так:
+
+```cisco
+Core#show access-lists
+Extended IP access list VLAN-ISOLATION
+    10 permit udp any any eq bootpc
+    20 permit udp any any eq bootps
+    30 permit ip any host 192.168.199.10
+    40 permit ip any host 192.168.199.11
+    50 deny ip 192.168.0.0 0.0.255.255 192.168.0.0 0.0.255.255
+    60 permit ip any any
+```
+
+### Основные команды для работы с ACL
+
+**Просмотр ACL:**
+
+```cisco
+show access-lists                          ! все ACL со счётчиками
+show ip access-lists <ACL_NAME>            ! конкретный ACL по имени
+show ip interface vlan <VLAN_ID>           ! какие ACL привязаны к SVI
+```
+
+**Привязка и отвязка ACL:**
+
+```cisco
+ip access-group <ACL_NAME> in              ! применить ACL на SVI
+no ip access-group <ACL_NAME> in           ! отвязать ACL от SVI
+```
+
+**Удаление и сброс ACL:**
+
+```cisco
+no ip access-list extended <ACL_NAME>      ! удалить ACL
+clear access-list counters <ACL_NAME>      ! обнулить счётчики
+```
