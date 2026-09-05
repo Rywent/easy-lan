@@ -136,7 +136,7 @@ Core(config-if)# switchport mode trunk
 Core(config-if)# switchport trunk allowed vlan 10
 Core(config-if)# exit
 
-! 4. Сохраняем конфигурацию в NVRAM, полная команда copy running-config startup-config, но обычно используют vm
+! 4. Сохраняем конфигурацию в NVRAM, полная команда copy running-config startup-config, но обычно используют wr
 Core# wr
 ```
 
@@ -157,7 +157,7 @@ SwMainDev(config)# interface fa0/2
 ! Если команда ниже выдает ошибку, просто пропускаем её:
 ! SwMainDev(config-if)# switchport trunk encapsulation dot1q
 SwMainDev(config-if)# switchport mode trunk
-SwMainDev(config-if)# switchport trunk allowed vlan 10
+SwMainDev(config-if)# switchport trunk allowed vlan 10 
 SwMainDev(config-if)# exit
 
 ! 3. Настраиваем Access-порты для подключения ПК пользователей (например, Fa0/3 - 24)
