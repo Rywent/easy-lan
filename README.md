@@ -72,14 +72,14 @@
    * Иерархия коммутаторов доступа: основной и расширительный в комнатах (`SwMainDev` + `SwExtDev`)
    * Создание VLANs, настройка Access-портов и Trunk-магистралей (`802.1Q dot1q`)[cite: 1].
 
-2. [**Модуль 2: Core Switch Inter-VLAN Routing & DHCP**](./tutorial/02-intervlan-and-dhcp.md)
+2. [**Модуль 2: Core Switch Inter-VLAN Routing & DHCP**](./tutorial/02-inter-vlan-and-dhcp.md)
    * Настройка L3-коммутатора `Core 3560-24PS` и виртуальных интерфейсов SVI[cite: 1].
    * Маршрутизация между отделами компании[cite: 1].
    * Настройка встроенного DHCP-сервера на Ядре (`ip dhcp pool`) с исключениями IP-адресов (`ip dhcp excluded-address`)
-
-3. [**Модуль 3: L2 Security & Port Security**](./tutorial/03-port-security.md)
+// В процессе написания:
+3. [**Модуль 3: Port Security**](./tutorial/03-port-security.md)
    * Защита портов коммутаторов доступа (Port Security).
-   * Жесткая привязка MAC-адресов устройств (`sticky` / `static mac`), защита от несанкционированных подключений и MAC-flooding.
+   * Привязка MAC-адресов устройств (`sticky` / `static mac`), защита от несанкционированных подключений.
 
 4. [**Модуль 4: Dynamic Routing (OSPF Area 0)**](./tutorial/04-ospf-routing.md)
    * Настройка динамической маршрутизации OSPF между Ядром (`Core`) и пограничным роутером (`MainRouter`).
